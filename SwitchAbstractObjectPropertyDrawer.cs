@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
@@ -21,7 +20,10 @@ public class SwitchAbstractObjectPropertyDrawer : PropertyDrawer
         Rect labelRect = new Rect(position.x, position.y, position.width * 0.5f, _spaceHeight);
         EditorGUI.LabelField(labelRect, property.displayName);
 
-        Type[] types = Array.FindAll(Assembly.GetAssembly(managedType).GetTypes(), x => x.BaseType == managedType);
+        //Type[] types = Array.FindAll(Assembly.GetAssembly(managedType).GetTypes(), x => x.BaseType == managedType);
+        Type[] types = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .Where(p => managedType.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract).ToArray();
         Type currentType = Array.Find(types, x => property.type.Contains(x.ToString()));
 
         Rect dropdownRect = new Rect(position.x + labelRect.width, position.y, position.width - labelRect.width, _spaceHeight);
